@@ -3,14 +3,14 @@ import { initializeApp } from "firebase/app";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCkLy7wXIi6ZLdcZwnBVt9W5b_z3Ktzq7k",
-  authDomain: "kleo-a82c2.firebaseapp.com",
-  projectId: "kleo-a82c2",
-  storageBucket: "kleo-a82c2.firebasestorage.app",
-  messagingSenderId: "863018456514",
-  appId: "1:863018456514:web:a0dd3c4111ae5ebd14b25b",
-  measurementId: "G-HRCK42XJ4S",
-  databaseURL: "https://kleo-a82c2-default-rtdb.asia-southeast1.firebasedatabase.app/",
+ apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
 };
 
 // Initialize Firebase
