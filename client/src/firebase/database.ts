@@ -7,6 +7,7 @@ export interface UserProfile {
   name: string;
   bio: string;
   profileImageUrl: string;
+  bannerImageUrl?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -55,9 +56,10 @@ export const getUserPosts = async (userId: string): Promise<Post[]> => {
   if (!snapshot.exists()) {
     return [];
   }
-  const posts = snapshot.val() as Record<string, Omit<Post, 'id'>>;
+  const posts = snapshot.val() as Record<string, Omit<Post, 'id' | 'userId'>>;
   return Object.entries(posts).map(([id, post]) => ({
     id,
+    userId,
     ...post,
   })).sort((a, b) => b.createdAt - a.createdAt);
 };
@@ -83,3 +85,28 @@ export const subscribeToUserProfile = (
   return () => off(profileRef);
 };
 
+export const getAllPosts = async (): Promise<Post[]> => {
+  const usersRef = ref(database, `users`);
+  const snapshot = await get(usersRef);
+  if (!snapshot.exists()) {
+    return [];
+  }
+  const users = snapshot.val() as Record<string, { posts?: Record<string, Omit<Post, 'id' | 'userId'>> }>;
+  const allPosts: Post[] = [];
+  
+  // Iterate through all users and collect their posts
+  Object.entries(users).forEach(([userId, userData]) => {
+    if (userData.posts) {
+      Object.entries(userData.posts).forEach(([postId, post]) => {
+        allPosts.push({
+          id: postId,
+          userId,
+          ...post,
+        });
+      });
+    }
+  });
+  
+  // Sort by creation date (newest first)
+  return allPosts.sort((a, b) => b.createdAt - a.createdAt);
+};
