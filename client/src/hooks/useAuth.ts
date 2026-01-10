@@ -1,53 +1,34 @@
-import { useState, useEffect, useCallback } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { useEffect } from "react";
 import {
-  auth,
   signInWithGoogle,
   signUpWithEmail,
   signInWithEmail,
   logout,
 } from "../firebase/auth";
-import { checkProfileExists } from "../firebase/database";
+import { useAuthStore } from "../store/authStore";
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  const {
+    user,
+    loading,
+    profileComplete,
+    refreshProfileStatus,
+    initializeAuth,
+  } = useAuthStore();
 
-  const refreshProfileStatus = useCallback(async (userId: string) => {
-    try {
-      const exists = await checkProfileExists(userId);
-      setProfileComplete(exists);
-    } catch (error) {
-      console.error("Error checking profile:", error);
-      setProfileComplete(false);
-    }
-  }, []);
   useEffect(() => {
-    const removeAuthListener = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        await refreshProfileStatus(user.uid);
-      } else {
-        setProfileComplete(null);
-      }
-      setLoading(false);
-    });
+    const removeAuthListener = initializeAuth();
+    return removeAuthListener;
+  }, [initializeAuth]);
 
-    return () => removeAuthListener();
-  }, [refreshProfileStatus]);
 
-  // Expose refresh function for manual refresh after profile creation
   useEffect(() => {
-    if (user && typeof window !== 'undefined') {
-      // Listen for storage event to refresh profile status
+    if (user && typeof window !== "undefined") {
       const handleStorageChange = () => {
-        if (user) {
           refreshProfileStatus(user.uid);
-        }
       };
-      window.addEventListener('focus', handleStorageChange);
-      return () => window.removeEventListener('focus', handleStorageChange);
+      window.addEventListener("focus", handleStorageChange);
+      return () => window.removeEventListener("focus", handleStorageChange);
     }
   }, [user, refreshProfileStatus]);
 
