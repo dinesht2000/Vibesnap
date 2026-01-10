@@ -134,7 +134,7 @@ const Login = () => {
           {/* Vibesnap Logo */}
           <div className="flex flex-col items-center mb-6">
             <div className="flex items-center justify-center mb-3">
-             <svg
+              <svg
                 width="48"
                 height="48"
                 viewBox="0 0 48 48"
@@ -143,7 +143,14 @@ const Login = () => {
                 className="mr-2"
               >
                 {/* Camera body */}
-                <rect x="12" y="16" width="24" height="18" rx="2" fill="#1F2937" />
+                <rect
+                  x="12"
+                  y="16"
+                  width="24"
+                  height="18"
+                  rx="2"
+                  fill="#1F2937"
+                />
                 <circle cx="24" cy="25" r="6" fill="#F3F4F6" />
                 <circle cx="24" cy="25" r="3" fill="#1F2937" />
                 {/* Colorful flowing lines from lens */}
@@ -202,7 +209,7 @@ const Login = () => {
               {error}
             </div>
           )}
-            {!showEmailForm ? (
+          {!showEmailForm ? (
             <>
               {/* Google Sign In Button */}
               <button
@@ -237,7 +244,9 @@ const Login = () => {
                   onClick={() => setShowEmailForm(true)}
                   className="text-sm text-gray-600 font-semibold"
                 >
-                  {isSignUp ? "Already have an account? Sign in" : "Sign in with email"}
+                  {isSignUp
+                    ? "Already have an account? Sign in"
+                    : "Sign in with email"}
                 </button>
               </div>
             </>
@@ -246,7 +255,10 @@ const Login = () => {
               <form onSubmit={handleEmailAuth} className="space-y-4 mb-4">
                 {isSignUp && (
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Name
                     </label>
                     <input
@@ -263,7 +275,10 @@ const Login = () => {
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email
                   </label>
                   <input
@@ -279,7 +294,10 @@ const Login = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Password
                   </label>
                   <input
@@ -299,7 +317,11 @@ const Login = () => {
                   disabled={loading}
                   className="w-full bg-black text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Sign In"}
+                  {loading
+                    ? "Please wait..."
+                    : isSignUp
+                    ? "Sign Up"
+                    : "Sign In"}
                 </button>
               </form>
 

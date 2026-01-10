@@ -1,18 +1,53 @@
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate,Navigate } from "react-router-dom";
-import { useUserProfile } from "../hooks/useQueries";
-
-
+import { Navigate } from "react-router-dom";
+import { useUserProfile, useAllPosts } from "../hooks/useQueries";
+import { getUserProfile } from "../firebase/database";
+import { useState, useEffect } from "react";
+import WelcomeSection from "../components/feed/WelcomeSection";
+import PostList from "../components/feed/PostList";
+import EmptyFeed from "../components/feed/EmptyFeed";
+import FloatingActionButton from "../components/feed/FloatingActionButton";
+import type { PostWithUser } from "../components/feed/PostCard";
 
 export default function Feed() {
- const { user, profileComplete, loading: authLoading } = useAuth();
+  const { user, profileComplete, loading: authLoading, logout } = useAuth();
 
-  const navigate = useNavigate();
   const { data: profile, isLoading: loading } = useUserProfile(
     user?.uid,
     !!(user && profileComplete === true)
   );
- 
+  const { data: allPosts = [] } = useAllPosts(
+    !!(user && profileComplete === true)
+  );
+  const [postsWithUsers, setPostsWithUsers] = useState<PostWithUser[]>([]);
+
+  useEffect(() => {
+    const fetchAllPosts = async () => {
+      if (allPosts.length === 0) return;
+
+      const postsWithUserData = await Promise.all(
+        allPosts.map(async (post) => {
+          try {
+            const userProfile = await getUserProfile(post.userId);
+            return {
+              ...post,
+              userName: userProfile?.name || "Unknown User",
+              userProfileImage: userProfile?.profileImageUrl || "",
+            };
+          } catch {
+            return {
+              ...post,
+              userName: "Unknown User",
+              userProfileImage: "",
+            };
+          }
+        })
+      );
+      setPostsWithUsers(postsWithUserData);
+    };
+
+    fetchAllPosts();
+  }, [allPosts]);
 
   if (!authLoading && !user) {
     return <Navigate to="/login" replace />;
@@ -30,61 +65,33 @@ export default function Feed() {
     );
   }
 
+  const cardColors = ["bg-purple-50", "bg-amber-50"];
+
+  const handleShare = (post: PostWithUser) => {
+    console.log("Sharing post:", post.id);
+  };
+
   return (
-      <div className="min-h-screen bg-gray-800 pb-20">
-      {/* Main Content Container */}
+    <div className="min-h-screen bg-gray-800 pb-20">
       <div className="max-w-2xl mx-auto bg-white min-h-screen">
-        {/* Welcome Section */}
-        <div className="px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(`/profile/${user?.uid}`)}
-            className="flex items-center gap-4 mb-6 hover:opacity-80 transition-opacity w-full text-left"
-          >
-            {profile?.profileImageUrl ? (
-              <img
-                src={profile.profileImageUrl}
-                alt={profile.name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-600 text-xl font-medium">
-                  {profile?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div>
-              <p className="text-gray-500 text-sm">Welcome Back,</p>
-              <p className="text-black text-xl font-bold">{profile?.name || user?.email}</p>
-            </div>
-          </button>
-          <h1 className="text-2xl font-bold text-black">Feeds</h1>
-        </div>
+        <WelcomeSection
+          user={user}
+          profile={profile || null}
+          onLogout={logout}
+        />
+
+        {postsWithUsers.length === 0 ? (
+          <EmptyFeed />
+        ) : (
+          <PostList
+            posts={postsWithUsers}
+            cardColors={cardColors}
+            onShare={handleShare}
+          />
+        )}
       </div>
 
-
-      <button
-        onClick={() => navigate("/create-post")}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-900 transition-colors z-50"
-        aria-label="Create new post"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-      </button>
+      <FloatingActionButton />
     </div>
-      
   );
-};
-
-
+}
