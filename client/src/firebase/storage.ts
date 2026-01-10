@@ -38,3 +38,12 @@ export const uploadPostImage = async (userId: string, postId: string, file: File
   const downloadURL = await getDownloadURL(imageRef);
   return downloadURL;
 };
+
+export const uploadPostVideo = async (userId: string, postId: string, file: File): Promise<string> => {
+  // Get file extension from the original file
+  const fileExtension = file.name.split('.').pop() || 'mp4';
+  const videoRef = ref(storage, `users/${userId}/posts/${postId}.${fileExtension}`);
+  await uploadBytes(videoRef, file);
+  const downloadURL = await getDownloadURL(videoRef);
+  return downloadURL;
+};

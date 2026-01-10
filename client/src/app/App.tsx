@@ -5,6 +5,7 @@ import ProfileSetup from "../pages/ProfileSetup";
 import Feed from "../pages/Feed";
 import Profile from "../pages/Profile";
 import RootRedirect from "./RootRedirect";
+import CreatePost from "../pages/CreatePost";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/feed" element={<Feed />} />
+          <Route path="/create-post" element={<CreatePost />} />
           <Route path="/profile/:userId?" element={<Profile />} />
           <Route path="/" element={<RootRedirect />} />
         </Routes>
