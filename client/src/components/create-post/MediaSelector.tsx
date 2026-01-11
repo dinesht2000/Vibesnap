@@ -21,23 +21,21 @@ export default function MediaSelector({
           className="w-full flex items-center gap-3 p-4 bg-transparent hover:bg-gray-50 rounded-lg transition-colors"
         >
           <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-            {/* Landscape icon with mountains and sun */}
             <svg
               className="w-6 h-6 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              {/* Sun circle */}
+
               <circle cx="18" cy="5" r="2.5" fill="currentColor" />
-              {/* Mountain peaks */}
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M2 18l3-4 3 3 3-3 3 2 3-2 3 3v2H2v-1z"
               />
-              {/* Ground line */}
+
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

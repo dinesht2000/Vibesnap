@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),tailwindcss()],
   build: {
-    chunkSizeWarningLimit: 700, // only hides warning (optional)
+    chunkSizeWarningLimit: 600, // only hides warning (optional)
     rollupOptions: {
       output: {
         manualChunks: {
@@ -17,7 +17,10 @@ export default defineConfig({
             "firebase/database",
             "firebase/storage"
           ],
+
           react: ["react", "react-dom"],
+          'react-query': ['@tanstack/react-query'],
+
         },
       },
     },
