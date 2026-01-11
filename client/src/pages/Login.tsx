@@ -121,69 +121,7 @@ const Login = () => {
           {/* Vibesnap Logo */}
           <div className="flex flex-col items-center mb-6">
             <div className="flex items-center justify-center mb-3">
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 48 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-2"
-              >
-                {/* Camera body */}
-                <rect
-                  x="12"
-                  y="16"
-                  width="24"
-                  height="18"
-                  rx="2"
-                  fill="#1F2937"
-                />
-                <circle cx="24" cy="25" r="6" fill="#F3F4F6" />
-                <circle cx="24" cy="25" r="3" fill="#1F2937" />
-                {/* Colorful flowing lines from lens */}
-                <path
-                  d="M24 19 L26 15 L28 17"
-                  stroke="#EC4899"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  d="M30 23 L34 21 L33 25"
-                  stroke="#F97316"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  d="M30 27 L34 29 L33 25"
-                  stroke="#14B8A6"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  d="M24 31 L26 35 L28 33"
-                  stroke="#A855F7"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  d="M18 27 L14 29 L15 25"
-                  stroke="#EC4899"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  d="M18 23 L14 21 L15 25"
-                  stroke="#F97316"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
+             <img src="/public/app_logo.png" alt="" />
               <h1 className="text-3xl font-bold text-gray-900">Vibesnap</h1>
             </div>
             <p className="text-gray-600 text-sm">
