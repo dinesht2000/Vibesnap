@@ -6,7 +6,7 @@ import {
   queryKeys,
 } from "../hooks/useQueries";
 import { getUserProfile, checkUserLikedPost } from "../firebase/database";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import WelcomeSection from "../components/feed/WelcomeSection";
 import PostList from "../components/feed/PostList";
 import EmptyFeed from "../components/feed/EmptyFeed";
@@ -14,6 +14,7 @@ import FloatingActionButton from "../components/feed/FloatingActionButton";
 import type { PostWithUser } from "../components/feed/PostCard";
 import { useQueryClient } from "@tanstack/react-query";
 import ShareModal from "../components/feed/ShareModal";
+import { FeedSkeleton } from "../components/skeleton-loader";
 
 export default function Feed() {
   const { user, profileComplete, loading: authLoading, logout } = useAuth();
@@ -30,11 +31,12 @@ export default function Feed() {
     isFetchingNextPage,
     isLoading: isLoadingPosts,
   } = useInfinitePosts(!!(user && profileComplete === true), 20);
+  
   const [postsWithUsers, setPostsWithUsers] = useState<PostWithUser[]>([]);
   const [selectedPost, setSelectedPost] = useState<PostWithUser | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
+  const allPosts = useMemo(() => data?.pages.flatMap((page) => page.posts) ?? [], [data]);
 
   useEffect(() => {
     const fetchAllPosts = async () => {
@@ -82,15 +84,11 @@ export default function Feed() {
   };
 
   if (!authLoading && user && profileComplete === false) {
-    return <Navigate to="/profile-setup" />;
+    return <Navigate to="/profile-setup" replace/>;
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800">
-        <div className="text-gray-300">Loading...</div>
-      </div>
-    );
+  if (loading || isLoadingPosts) {
+    return <FeedSkeleton />;
   }
 
   const cardColors = [

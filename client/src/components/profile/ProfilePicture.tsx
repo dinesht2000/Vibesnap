@@ -34,9 +34,9 @@ export default function ProfilePicture({
         {isEditing && isOwnProfile && (
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 bg-gray-900 text-white rounded-full p-1.5 hover:bg-gray-800 shadow-lg"
+            className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 hover:bg-gray-100 shadow-lg"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

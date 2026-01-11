@@ -36,15 +36,11 @@ export default function PostEngagement({
   const handleLikeClick = () => {
     if (!onLike) return;
     
-    // Mark that we're doing an optimistic update
     isOptimisticUpdateRef.current = true;
-    
-    // Optimistic update
     const newLiked = !optimisticLiked;
     setOptimisticLiked(newLiked);
     setOptimisticCount(newLiked ? optimisticCount + 1 : Math.max(0, optimisticCount - 1));
     
-    // Call the actual like handler
     onLike();
   };
 

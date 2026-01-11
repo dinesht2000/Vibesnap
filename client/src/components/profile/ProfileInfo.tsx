@@ -7,7 +7,6 @@ interface ProfileInfoProps {
   onNameChange: (value: string) => void;
   onBioChange: (value: string) => void;
   onSave: () => void;
-  onCancel: () => void;
   isSaving: boolean;
 }
 
@@ -20,40 +19,40 @@ export default function ProfileInfo({
   onNameChange,
   onBioChange,
   onSave,
-  onCancel,
   isSaving,
 }: ProfileInfoProps) {
   if (isEditing) {
     return (
-      <div className="space-y-4 mb-8">
-        <input
-          type="text"
-          value={editName}
-          onChange={(e) => onNameChange(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-xl font-bold"
-          placeholder="Name"
-        />
-        <textarea
-          value={editBio}
-          onChange={(e) => onBioChange(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none"
-          rows={3}
-          placeholder="Bio"
-        />
-        <div className="flex gap-2">
+      <div className="flex flex-col h-full">
+        <div className="flex-1 space-y-6">
+          <div>
+            <label className="block text-gray-900 font-medium mb-2">Name</label>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => onNameChange(e.target.value)}
+              className="w-full px-0 py-2 border-b border-gray-300 focus:outline-none focus:border-gray-900 text-gray-900 bg-transparent"
+              placeholder="Name"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-900 font-medium mb-2">Bio</label>
+            <textarea
+              value={editBio}
+              onChange={(e) => onBioChange(e.target.value)}
+              className="w-full px-0 py-2 border-b border-gray-300 focus:outline-none focus:border-gray-900 resize-none text-gray-900 bg-transparent"
+              rows={4}
+              placeholder="Bio"
+            />
+          </div>
+        </div>
+        <div className="mt-auto pt-6 pb-4">
           <button
             onClick={onSave}
             disabled={isSaving}
-            className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+            className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 font-medium uppercase"
           >
             {isSaving ? "Saving..." : "Save"}
-          </button>
-          <button
-            onClick={onCancel}
-            disabled={isSaving}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-          >
-            Cancel
           </button>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { LoginSkeleton } from "../components/skeleton-loader";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,7 +21,6 @@ const Login = () => {
     signInWithEmail,
   } = useAuth();
 
-  // Redirect if already authenticated
   if (!authLoading && user) {
     if (profileComplete === false) {
       return <Navigate to="/profile-setup" replace />;
@@ -46,7 +47,6 @@ const Login = () => {
       } else {
         await signInWithEmail(email, password);
       }
-      // Navigation will be handled by useEffect above
     } catch (err: unknown) {
       let errorMessage = isSignUp ? "Failed to sign up" : "Failed to sign in";
       const error = err as { code?: string; message?: string };
@@ -82,7 +82,6 @@ const Login = () => {
 
     try {
       await signInWithGoogle();
-      // Navigation will be handled by useEffect above
     } catch (err: unknown) {
       let errorMessage = "Failed to sign in with Google";
       const error = err as { code?: string; message?: string };
@@ -100,35 +99,23 @@ const Login = () => {
       setLoading(false);
     }
   };
-  // Show loading if checking auth state
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800">
-        <div className="text-gray-300">Loading...</div>
-      </div>
-    );
+
+  if (authLoading || user) {
+        return <LoginSkeleton />;
   }
 
-  // Don't show login form if already authenticated (redirect will happen)
-  if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800">
-        <div className="text-gray-300">Redirecting...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen relative bg-gray-800 overflow-hidden">
-      {/* Background Image */}
+
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&h=1200&fit=crop&q=80"
+          src="/login_page .png"
           alt="Background"
           className="w-full h-full object-cover"
         />
       </div>
-      {/* Login card */}
+
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="bg-white rounded-t-3xl px-8 pt-8 pb-10 shadow-2xl">
           {/* Vibesnap Logo */}

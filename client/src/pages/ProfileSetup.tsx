@@ -5,15 +5,19 @@ import {
   useCheckProfileExists,
   useCreateUserProfile,
 } from "../hooks/useQueries";
-import { uploadProfileImage } from "../firebase/storage";
+import { uploadProfileImage,uploadBannerImage } from "../firebase/storage";
+import { ProfileSetupSkeleton } from "../components/skeleton-loader";
 
 export default function ProfileSetup() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [bannerImage, setBannerImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
+  const [bannerPreview, setBannerPreview] = useState<string>("");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
   const { user, refreshProfileStatus, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -42,6 +46,18 @@ export default function ProfileSetup() {
     }
   };
 
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBannerImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBannerPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -55,17 +71,23 @@ export default function ProfileSetup() {
 
     try {
       let profileImageUrl = "";
+      let bannerImageUrl = "";
+
       if (profileImage) {
         profileImageUrl = await uploadProfileImage(user.uid, profileImage);
       }
+      if (bannerImage) {
+        bannerImageUrl = await uploadBannerImage(user.uid, bannerImage);
+      }
 
-      // Create user profile using TanStack Query mutation
       await createProfileMutation.mutateAsync({
         userId: user.uid,
         profile: {
           name: name.trim(),
           bio: bio.trim() || "",
           profileImageUrl,
+          bannerImageUrl,
+
         },
       });
 
@@ -81,15 +103,7 @@ export default function ProfileSetup() {
   };
 
   if (isVerifyingProfile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
+    return <ProfileSetupSkeleton />;
   }
 
   return (
@@ -97,9 +111,7 @@ export default function ProfileSetup() {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Complete Your Profile
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
             <p className="text-gray-600">Tell us a bit about yourself</p>
           </div>
 
@@ -110,7 +122,6 @@ export default function ProfileSetup() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Profile Image Upload */}
             <div className="flex flex-col items-center">
               <div className="relative mb-4">
                 {preview ? (
@@ -153,12 +164,49 @@ export default function ProfileSetup() {
               </button>
             </div>
 
-            {/* Name Input */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-1"
+            <div className="flex flex-col items-center">
+              <div className="relative mb-4 w-full h-32 rounded-lg overflow-hidden">
+                {bannerPreview ? (
+                  <img
+                    src={bannerPreview}
+                    alt="Banner preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-white/70"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={bannerInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerImageChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => bannerInputRef.current?.click()}
+                className="text-sm text-gray-600 hover:text-gray-900 underline"
               >
+                {bannerPreview ? "Change Banner" : "Add Banner (Optional)"}
+              </button>
+            </div>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                 Name *
               </label>
               <input
@@ -173,12 +221,8 @@ export default function ProfileSetup() {
               />
             </div>
 
-            {/* Bio Input */}
             <div>
-              <label
-                htmlFor="bio"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
               <textarea
@@ -192,7 +236,6 @@ export default function ProfileSetup() {
               />
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={createProfileMutation.isPending}

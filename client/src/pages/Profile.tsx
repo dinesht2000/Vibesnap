@@ -176,16 +176,16 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+   <div className={`${isEditing ? 'h-screen' : 'min-h-screen'} bg-white flex flex-col overflow-hidden`}>
       {error && <ErrorToast error={error} />}
 
       {/* Banner Section */}
-      <div className="relative h-fit">
+       <div className="relative h-fit shrink-0">
         <ProfileBanner
           bannerUrl={displayBanner}
           isEditing={isEditing}
           isOwnProfile={isOwnProfile}
-          onBackClick={() => navigate("/feed")}
+          onBackClick={isEditing ? handleCancel : () => navigate("/feed")}
           onBannerChange={handleBannerImageChange}
           bannerInputRef={bannerInputRef}
         />
@@ -202,8 +202,8 @@ export default function Profile() {
         {!isEditing && isOwnProfile && <ProfileEditButton onEditClick={handleEditClick} />}
       </div>
       {/* Profile Content */}
-      <main className="pt-16 pb-24 px-4">
-        <div className="max-w-2xl mx-auto">
+      <main className={`${isEditing ? 'flex-1 flex flex-col overflow-y-auto' : ''} pt-16 ${isEditing ? 'pb-4' : 'pb-24'} px-4`}>
+        <div className={`max-w-2xl mx-auto ${isEditing ? 'flex-1 flex flex-col' : ''} w-full`}>
           <ProfileInfo
             name={displayName}
             bio={displayBio}
@@ -213,25 +213,25 @@ export default function Profile() {
             onNameChange={setEditName}
             onBioChange={setEditBio}
             onSave={handleSave}
-            onCancel={handleCancel}
             isSaving={updateProfileMutation.isPending}
           />
 
-          {/* My Posts Section */}
-          <div className="mt-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">My Posts</h2>
-            <ProfilePostsGrid 
-              posts={posts} 
-              isOwnProfile={isOwnProfile}
-              onDelete={handleDeletePost}
-              isDeleting={deletePostMutation.isPending}
-            />
-          </div>
+         {!isEditing && (
+            <div className="mt-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">My Posts</h2>
+              <ProfilePostsGrid 
+                posts={posts} 
+                isOwnProfile={isOwnProfile}
+                onDelete={handleDeletePost}
+                isDeleting={deletePostMutation.isPending}
+              />
+            </div>
+          )}
         </div>
       </main>
 
       {/* Floating Action Button */}
-      {isOwnProfile && (
+      {isOwnProfile && !isEditing  && (
         <button
           onClick={() => navigate("/create-post")}
           className="fixed bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors z-30"

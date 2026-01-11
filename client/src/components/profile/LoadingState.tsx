@@ -1,8 +1,7 @@
+import { ProfileSkeleton } from "../skeleton-loader";
+
 export default function LoadingState() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-gray-600">Loading...</div>
-    </div>
-  );
+  return <ProfileSkeleton />;
+
 }
 

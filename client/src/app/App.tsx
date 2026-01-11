@@ -23,8 +23,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          //public routes
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<RootRedirect />} />
+
+          //private routes
           <Route element={<ProtectedRouteLayout />}>
             <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route path="/feed" element={<Feed />} />

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import PostCard from "./PostCard";
 import type { PostWithUser } from "./PostCard";
+import { PostCardSkeleton } from "../skeleton-loader";
+
 
 interface PostListProps {
   posts: PostWithUser[];
@@ -76,11 +78,19 @@ export default function PostList({
       {hasMore && (
         <div ref={loadMoreRef} className="h-10" />
       )}
+         {isLoadingMore && (
+        <div className="space-y-6">
+          {[0, 1].map((index) => (
+            <PostCardSkeleton key={index} cardColor={cardColors[index % cardColors.length]} />
+          ))}
+        </div>
+      )}
        {!hasMore && posts.length > 0 && (
         <div className="flex justify-center items-center py-8">
           <div className="text-gray-400 text-sm">No more posts to load</div>
         </div>
       )}
+      
     </div>
   );
 }

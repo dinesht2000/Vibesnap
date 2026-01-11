@@ -20,9 +20,7 @@ export default function PostVideo({ videoUrl }: PostVideoProps) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Video is visible - play it
             video.play().catch((error) => {
-              // Handle autoplay restrictions (user interaction required)
               console.log("Autoplay prevented:", error);
             });
           } else {

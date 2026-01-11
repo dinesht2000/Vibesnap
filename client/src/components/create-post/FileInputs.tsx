@@ -1,5 +1,3 @@
-// FileInputs doesn't actually use MediaType, but keeping import for consistency if needed
-
 interface FileInputsProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   videoInputRef: React.RefObject<HTMLInputElement | null>;
