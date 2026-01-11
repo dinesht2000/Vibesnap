@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPost } from "../firebase/database";
+import {
+  createPost,
+  updatePostWithImageUrls,
+  updatePostWithVideoUrl,
+} from "../firebase/database";
 import { uploadPostImage, uploadPostVideo } from "../firebase/storage";
 import { compressImage } from "../utils/compressImage";
 import { compressVideo } from "../utils/compressVideo";
@@ -8,7 +12,6 @@ import type { User } from "firebase/auth";
 import type { MediaType } from "../types/media";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./useQueries";
-
 
 export interface UseCreatePostReturn {
   content: string;
@@ -28,7 +31,6 @@ export function useCreatePost(): UseCreatePostReturn {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
 
   const handleCreatePost = async (
     user: User,
@@ -61,16 +63,7 @@ export function useCreatePost(): UseCreatePostReturn {
               uploadPostImage(user.uid, postId, file, index)
             )
           );
-
-
-          const { getDatabase, ref, update } = await import("firebase/database");
-          const database = getDatabase();
-          const postRef = ref(database, `users/${user.uid}/posts/${postId}`);
-          await update(postRef, { imageUrls });
-          
-          if (imageUrls.length > 0) {
-            await update(postRef, { imageUrl: imageUrls[0] });
-          }
+          await updatePostWithImageUrls(user.uid, postId, imageUrls);
         }
       } else if (selectedFiles.length > 0 && mediaType === "video") {
         const selectedFile = selectedFiles[0];
@@ -81,11 +74,12 @@ export function useCreatePost(): UseCreatePostReturn {
         });
 
         if (postId) {
-          const videoUrl = await uploadPostVideo(user.uid, postId, compressedFile);
-          const { getDatabase, ref, update } = await import("firebase/database");
-          const database = getDatabase();
-          const postRef = ref(database, `users/${user.uid}/posts/${postId}`);
-          await update(postRef, { videoUrl });
+          const videoUrl = await uploadPostVideo(
+            user.uid,
+            postId,
+            compressedFile
+          );
+          await updatePostWithVideoUrl(user.uid, postId, videoUrl);
         }
       } else {
         await createPost(user.uid, {
@@ -99,9 +93,11 @@ export function useCreatePost(): UseCreatePostReturn {
           URL.revokeObjectURL(url);
         }
       });
-      
+
       queryClient.invalidateQueries({ queryKey: queryKeys.allPosts() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.userPosts(user.uid) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.userPosts(user.uid),
+      });
 
       navigate("/feed");
     } catch (error) {
@@ -119,4 +115,3 @@ export function useCreatePost(): UseCreatePostReturn {
     handleCreatePost,
   };
 }
-

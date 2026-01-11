@@ -25,6 +25,24 @@ export interface Post {
   videoUrl?: string;
   likeCount?: number;
 }
+
+const extractStoragePathFromUrl = (downloadUrl: string): string | null => {
+  try {
+    const url = new URL(downloadUrl);
+    const pathMatch = url.pathname.match(/\/o\/(.+)/);
+    if (pathMatch) {
+
+      return decodeURIComponent(pathMatch[1]);
+    }
+    return null;
+  } catch (error) {
+    console.error("Error extracting storage path from URL:", error);
+    return null;
+  }
+};
+
+
+
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   const profileRef = ref(database, `users/${userId}/profile`);
   const snapshot = await get(profileRef);
@@ -129,18 +147,38 @@ export const deletePost = async (userId: string, postId: string, post: Post): Pr
   }
   if (post.videoUrl) {
     try {
-      const extensions = ['mp4', 'mov', 'webm', 'avi'];
-      for (const ext of extensions) {
+      //extracting the storage path from the download URL
+      const storagePath = extractStoragePathFromUrl(post.videoUrl);
+      
+      if (storagePath) {
+        // Use the exact path from the URL
+        const videoStorageRef = storageRef(storage, storagePath);
         try {
-          const videoStorageRef = storageRef(storage, `users/${userId}/posts/${postId}.${ext}`);
           await deleteObject(videoStorageRef);
-          break; 
-        } catch (error) {
-          console.error("Error deleting post video:", error);
+        } catch (error: unknown) {
+
+          if (error && typeof error === 'object' && 'code' in error && error.code !== 'storage/object-not-found') {
+            console.error("Error deleting post video:", error);
+          }
+        }
+      } else {
+        const extensions = ['mp4', 'mov', 'webm', 'avi'];
+        for (const ext of extensions) {
+          try {
+            const videoStorageRef = storageRef(storage, `users/${userId}/posts/${postId}.${ext}`);
+            await deleteObject(videoStorageRef);
+            break;
+          } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code !== 'storage/object-not-found') {
+              console.error("Error deleting post video:", error);
+            }
+          }
         }
       }
-    } catch (error) {
-      console.error("Error deleting post video:", error);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'code' in error && error.code !== 'storage/object-not-found') {
+        console.error("Error deleting post video:", error);
+      }
     }
   }
 };
@@ -184,4 +222,17 @@ export const getPostsPaginated = async (page: number, limit: number = 10): Promi
   const hasMore = endIndex < allPosts.length;
   
   return { posts, hasMore };
+};
+
+export const updatePostWithImageUrls = async (userId: string, postId: string, imageUrls: string[]): Promise<void> => {
+  const postRef = ref(database, `users/${userId}/posts/${postId}`);
+  await update(postRef, { imageUrls });
+  if (imageUrls.length > 0) {
+    await update(postRef, { imageUrl: imageUrls[0] });
+  }
+};
+
+export const updatePostWithVideoUrl = async (userId: string, postId: string, videoUrl: string): Promise<void> => {
+  const postRef = ref(database, `users/${userId}/posts/${postId}`);
+  await update(postRef, { videoUrl });
 };
