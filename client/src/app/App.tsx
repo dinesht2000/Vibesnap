@@ -6,6 +6,8 @@ import Feed from "../pages/Feed";
 import Profile from "../pages/Profile";
 import RootRedirect from "./RootRedirect";
 import CreatePost from "../pages/CreatePost";
+import ProtectedRouteLayout from "./ProtectedRoute";
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,11 +24,13 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/profile-setup" element={<ProfileSetup />} />
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/create-post" element={<CreatePost />} />
-          <Route path="/profile/:userId?" element={<Profile />} />
           <Route path="/" element={<RootRedirect />} />
+          <Route element={<ProtectedRouteLayout />}>
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/profile/:userId?" element={<Profile />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

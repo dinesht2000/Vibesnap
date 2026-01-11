@@ -16,17 +16,14 @@ export default function RootRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  // If profile is not complete, redirect to profile setup
   if (profileComplete === false) {
     return <Navigate to="/profile-setup" replace />;
   }
 
-  // If profile is complete, redirect to feed
   if (profileComplete === true) {
     return <Navigate to="/feed" replace />;
   }
 
-  // Fallback (shouldn't reach here)
   return <Navigate to="/login" replace />;
 }
 
