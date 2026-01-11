@@ -1,6 +1,6 @@
 interface CameraModalProps {
   isActive: boolean;
-  videoPreviewRef: React.RefObject<HTMLVideoElement>;
+  videoPreviewRef: React.RefObject<HTMLVideoElement| null>;
   onClose: () => void;
   onCapture: () => void;
 }
@@ -38,8 +38,6 @@ export default function CameraModal({
         <h2 className="text-white font-semibold text-lg">Camera</h2>
         <div className="w-10" /> 
       </div>
-
-
       <div className="flex-1 flex items-center justify-center relative">
         <video
           ref={videoPreviewRef}

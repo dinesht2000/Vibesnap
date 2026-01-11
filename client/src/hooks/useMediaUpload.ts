@@ -5,7 +5,9 @@ export type { MediaType };
 
 export interface UseMediaUploadReturn {
   selectedFile: File | null;
+  selectedFiles: File[];
   previewUrl: string | null;
+  previewUrls: string[];
   mediaType: MediaType;
   isCameraActive: boolean;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -19,6 +21,7 @@ export interface UseMediaUploadReturn {
   handleCameraClick: () => void;
   handleCameraCapture: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeMedia: () => void;
+  removeImage: (index: number) => void;
   startCamera: () => Promise<void>;
   stopCamera: () => void;
   capturePhoto: () => void;
@@ -32,7 +35,9 @@ const isMobile = () => {
 
 export function useMediaUpload(): UseMediaUploadReturn {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [mediaType, setMediaType] = useState<MediaType>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -53,18 +58,39 @@ export function useMediaUpload(): UseMediaUploadReturn {
   }, [cameraStream]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type.startsWith("image/")) {
-        setMediaType("image");
-        setSelectedFile(file);
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      } else if (file.type.startsWith("video/")) {
-        setMediaType("video");
-        setSelectedFile(file);
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const videoFile = fileArray.find((file) => file.type.startsWith("video/"));
+    
+    if (videoFile) {
+      setMediaType("video");
+      previewUrls.forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+      setSelectedFiles([]);
+      setPreviewUrls([]);
+      setSelectedFile(videoFile);
+      const url = URL.createObjectURL(videoFile);
+      setPreviewUrl(url);
+      return;
+    }
+
+    const imageFiles = fileArray.filter((file) => file.type.startsWith("image/"));    
+    if (imageFiles.length > 0) {
+      setMediaType("image");
+      const newFiles: File[] = [];
+      const newPreviewUrls: string[] = [];
+      imageFiles.forEach((file) => {
+        newFiles.push(file);
+        newPreviewUrls.push(URL.createObjectURL(file));
+      });
+      setSelectedFiles((prev) => [...prev, ...newFiles]);
+      setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+      if (newFiles.length > 0) {
+        setSelectedFile(newFiles[0]);
+        setPreviewUrl(newPreviewUrls[0]);
       }
     }
   };
@@ -80,7 +106,7 @@ export function useMediaUpload(): UseMediaUploadReturn {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" }, // Use front camera by default
+        video: { facingMode: "user" },
       });
       setCameraStream(stream);
       setIsCameraActive(true);
@@ -90,7 +116,6 @@ export function useMediaUpload(): UseMediaUploadReturn {
     } catch (error) {
       console.error("Error accessing camera:", error);
       alert("Unable to access camera. Please check permissions or try selecting from gallery.");
-      // Fallback to file input
       cameraInputRef.current?.click();
     }
   };
@@ -114,12 +139,9 @@ export function useMediaUpload(): UseMediaUploadReturn {
     const context = canvas.getContext("2d");
 
     if (!context) return;
-
-    // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw video frame to canvas
     context.drawImage(video, 0, 0);
 
     // Convert canvas to blob, then to File
@@ -130,9 +152,11 @@ export function useMediaUpload(): UseMediaUploadReturn {
             type: "image/jpeg",
           });
           setMediaType("image");
-          setSelectedFile(file);
           const url = URL.createObjectURL(file);
+          setSelectedFile(file);
           setPreviewUrl(url);
+          setSelectedFiles((prev) => [...prev, file]);
+          setPreviewUrls((prev) => [...prev, url]);
           stopCamera();
         }
       },
@@ -143,10 +167,8 @@ export function useMediaUpload(): UseMediaUploadReturn {
 
   const handleCameraClick = () => {
     if (isMobile()) {
-      // On mobile, use file input with capture attribute
       cameraInputRef.current?.click();
     } else {
-      // On web/desktop, access webcam
       startCamera();
     }
   };
@@ -158,28 +180,54 @@ export function useMediaUpload(): UseMediaUploadReturn {
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+      setSelectedFiles((prev) => [...prev, file]);
+      setPreviewUrls((prev) => [...prev, url]);
     }
   };
 
   const removeMedia = () => {
+     previewUrls.forEach((url) => {
+      if (url) URL.revokeObjectURL(url);
+    });
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
     setSelectedFile(null);
+    setSelectedFiles([]);
     setPreviewUrl(null);
+    setPreviewUrls([]);
     setMediaType(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (videoInputRef.current) videoInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
-    // Stop camera if active
     if (isCameraActive) {
       stopCamera();
+    }
+  };
+  const removeImage = (index: number) => {
+    if (previewUrls[index]) {
+      URL.revokeObjectURL(previewUrls[index]);
+    }
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newUrls = previewUrls.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setPreviewUrls(newUrls);
+    
+    if (newFiles.length > 0) {
+      setSelectedFile(newFiles[0]);
+      setPreviewUrl(newUrls[0]);
+    } else {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setMediaType(null);
     }
   };
 
   return {
     selectedFile,
+    selectedFiles,
     previewUrl,
+    previewUrls,
     mediaType,
     isCameraActive,
     fileInputRef,
@@ -193,6 +241,7 @@ export function useMediaUpload(): UseMediaUploadReturn {
     handleCameraClick,
     handleCameraCapture,
     removeMedia,
+    removeImage,
     startCamera,
     stopCamera,
     capturePhoto,

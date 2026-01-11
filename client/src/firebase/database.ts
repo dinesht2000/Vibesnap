@@ -93,11 +93,12 @@ export const getAllPosts = async (): Promise<Post[]> => {
   }
   const users = snapshot.val() as Record<string, { posts?: Record<string, Omit<Post, 'id' | 'userId'>> }>;
   const allPosts: Post[] = [];
-  
-  // Iterate through all users and collect their posts
+  let cnt=0;
+
   Object.entries(users).forEach(([userId, userData]) => {
     if (userData.posts) {
       Object.entries(userData.posts).forEach(([postId, post]) => {
+        cnt=cnt+1;
         allPosts.push({
           id: postId,
           userId,
@@ -106,7 +107,7 @@ export const getAllPosts = async (): Promise<Post[]> => {
       });
     }
   });
-  
+  console.log(cnt);
   // Sort by creation date (newest first)
   return allPosts.sort((a, b) => b.createdAt - a.createdAt);
 };

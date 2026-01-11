@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPost } from "../firebase/database";
 import { uploadPostImage, uploadPostVideo } from "../firebase/storage";
+import { compressImage } from "../utils/compressImage";
+import { compressVideo } from "../utils/compressVideo";
 import type { User } from "firebase/auth";
 import type { MediaType } from "../types/media";
 
@@ -11,9 +13,9 @@ export interface UseCreatePostReturn {
   isUploading: boolean;
   handleCreatePost: (
     user: User,
-    selectedFile: File | null,
+    selectedFiles: File[],
     mediaType: MediaType,
-    previewUrl: string | null
+    previewUrls: string[]
   ) => Promise<void>;
 }
 
@@ -24,12 +26,12 @@ export function useCreatePost(): UseCreatePostReturn {
 
   const handleCreatePost = async (
     user: User,
-    selectedFile: File | null,
+    selectedFiles: File[],
     mediaType: MediaType,
-    previewUrl: string | null
+    previewUrls: string[]
   ) => {
-
-    if (!content.trim() && !selectedFile) {
+    // Validate that there's at least content or media
+    if (!content.trim() && selectedFiles.length === 0) {
       alert("Please add some content or media to your post");
       return;
     }
@@ -37,26 +39,43 @@ export function useCreatePost(): UseCreatePostReturn {
     setIsUploading(true);
 
     try {
-      if (selectedFile && mediaType === "image") {
+      if (selectedFiles.length > 0 && mediaType === "image") {
+        const compressedFiles = await Promise.all(
+          selectedFiles.map((file) => compressImage(file))
+        );
+
         const postId = await createPost(user.uid, {
           userId: user.uid,
           content: content.trim(),
         });
 
         if (postId) {
-          const imageUrl = await uploadPostImage(user.uid, postId, selectedFile);
+          const imageUrls = await Promise.all(
+            compressedFiles.map((file, index) =>
+              uploadPostImage(user.uid, postId, file, index)
+            )
+          );
+
+
           const { getDatabase, ref, update } = await import("firebase/database");
           const database = getDatabase();
           const postRef = ref(database, `users/${user.uid}/posts/${postId}`);
-          await update(postRef, { imageUrl });
+          await update(postRef, { imageUrls });
+          
+          if (imageUrls.length > 0) {
+            await update(postRef, { imageUrl: imageUrls[0] });
+          }
         }
-      } else if (selectedFile && mediaType === "video") {
+      } else if (selectedFiles.length > 0 && mediaType === "video") {
+        const selectedFile = selectedFiles[0];
+        const compressedFile = await compressVideo(selectedFile);
         const postId = await createPost(user.uid, {
           userId: user.uid,
           content: content.trim(),
         });
+
         if (postId) {
-          const videoUrl = await uploadPostVideo(user.uid, postId, selectedFile);
+          const videoUrl = await uploadPostVideo(user.uid, postId, compressedFile);
           const { getDatabase, ref, update } = await import("firebase/database");
           const database = getDatabase();
           const postRef = ref(database, `users/${user.uid}/posts/${postId}`);
@@ -69,11 +88,11 @@ export function useCreatePost(): UseCreatePostReturn {
         });
       }
 
-
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-
+      previewUrls.forEach((url) => {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      });
 
       navigate("/feed");
     } catch (error) {

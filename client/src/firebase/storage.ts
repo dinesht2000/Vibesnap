@@ -32,8 +32,8 @@ export const uploadBannerImage = async (userId: string, file: File): Promise<str
   return downloadURL;
 };
 
-export const uploadPostImage = async (userId: string, postId: string, file: File): Promise<string> => {
-  const imageRef = ref(storage, `users/${userId}/posts/${postId}.jpg`);
+export const uploadPostImage = async (userId: string, postId: string, file: File,index: number = 0): Promise<string> => {
+  const imageRef = ref(storage, `users/${userId}/posts/${postId}_${index}.jpg`);
   await uploadBytes(imageRef, file);
   const downloadURL = await getDownloadURL(imageRef);
   return downloadURL;
