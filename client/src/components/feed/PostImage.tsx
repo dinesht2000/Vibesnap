@@ -40,18 +40,22 @@ export default function PostImage({ imageUrl, alt = "Post",imageUrls }: PostImag
 
   return (
      <div className="mb-4 relative">
-      <div className="relative w-full h-100 rounded-lg overflow-hidden bg-gray-100">
-        <div className="relative w-full h-full">
+      <div className="relative w-full rounded-lg overflow-hidden bg-gray-100">
+        <div className="relative w-full">
           {images.map((url, index) => (
-            <LazyImage
+            <div
               key={`${url}-${index}`}
-              src={url}
-              alt={`${alt} ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
-              index === validIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              className={`transition-opacity duration-300 ${
+                index === validIndex ? 'opacity-100 z-10 relative' : 'opacity-0 z-0 pointer-events-none absolute inset-0'
               }`}
-              rootMargin="100px"
-            />
+            >
+              <LazyImage
+                src={url}
+                alt={`${alt} ${index + 1}`}
+                className="w-full h-auto object-contain"
+                rootMargin="100px"
+              />
+            </div>
           ))}
         </div>
 

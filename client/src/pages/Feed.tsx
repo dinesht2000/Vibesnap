@@ -114,8 +114,8 @@ export default function Feed() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-800 pb-20">
-      <div className="max-w-2xl mx-auto bg-white min-h-screen">
+    <div className="min-h-screen bg-gray-800 pb-0">
+      <div className="max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto bg-white min-h-screen">
         <WelcomeSection
           user={user}
           profile={profile || null}
