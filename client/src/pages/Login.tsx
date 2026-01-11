@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { LoginSkeleton } from "../components/skeleton-loader";
-
+import logo from "@/assets/app_logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -121,7 +121,7 @@ const Login = () => {
           {/* Vibesnap Logo */}
           <div className="flex flex-col items-center mb-6">
             <div className="flex items-center justify-center mb-3">
-             <img src="/public/app_logo.png" alt="" />
+             <img src={logo} alt="" />
               <h1 className="text-3xl font-bold text-gray-900">Vibesnap</h1>
             </div>
             <p className="text-gray-600 text-sm">
