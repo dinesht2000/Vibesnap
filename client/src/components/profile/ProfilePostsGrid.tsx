@@ -1,4 +1,6 @@
 import type { Post } from "../../firebase/database";
+import LazyImage from "../LazyImage";
+
 
 interface ProfilePostsGridProps {
   posts: Post[];
@@ -38,7 +40,7 @@ export default function ProfilePostsGrid({ posts, isOwnProfile = false, onDelete
             className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
           >
             {thumbnailImage ? (
-              <img src={thumbnailImage} alt="Post" className="w-full h-full object-cover" />
+              <LazyImage src={thumbnailImage} alt="Post" className="w-full h-full object-cover" rootMargin="50px" />
             ) : post.videoUrl ? (
               <video
                 src={post.videoUrl}

@@ -1,13 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Login from "../pages/Login";
-import ProfileSetup from "../pages/ProfileSetup";
-import Feed from "../pages/Feed";
-import Profile from "../pages/Profile";
 import RootRedirect from "./RootRedirect";
-import CreatePost from "../pages/CreatePost";
 import ProtectedRouteLayout from "./ProtectedRoute";
+import { FullScreenSkeleton } from "../components/skeleton-loader"; 
+import { Suspense, lazy } from "react";
 
+const Login = lazy(() => import("../pages/Login"));
+const ProfileSetup = lazy(() => import("../pages/ProfileSetup"));
+const Feed = lazy(() => import("../pages/Feed"));
+const Profile = lazy(() => import("../pages/Profile"));
+const CreatePost = lazy(() => import("../pages/CreatePost"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +24,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+       <Suspense fallback={<FullScreenSkeleton />}>
         <Routes>
           //public routes
           <Route path="/login" element={<Login />} />
@@ -35,6 +38,7 @@ function App() {
             <Route path="/profile/:userId?" element={<Profile />} />
           </Route>
         </Routes>
+       </Suspense>
       </BrowserRouter>
     </QueryClientProvider>
   );

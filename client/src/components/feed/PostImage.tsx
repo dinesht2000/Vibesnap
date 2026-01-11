@@ -1,4 +1,5 @@
 import { useState } from "react";
+import LazyImage from "../LazyImage";
 
 interface PostImageProps {
   imageUrl?: string;
@@ -40,13 +41,14 @@ export default function PostImage({ imageUrl, alt = "Post",imageUrls }: PostImag
       <div className="relative w-full h-100 rounded-lg overflow-hidden bg-gray-100">
         <div className="relative w-full h-full">
           {images.map((url, index) => (
-            <img
+            <LazyImage
               key={index}
               src={url}
               alt={`${alt} ${index + 1}`}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
                 index === currentIndex ? 'opacity-100' : 'opacity-0'
               }`}
+              rootMargin="100px"
             />
           ))}
         </div>
