@@ -6,6 +6,9 @@ import { compressImage } from "../utils/compressImage";
 import { compressVideo } from "../utils/compressVideo";
 import type { User } from "firebase/auth";
 import type { MediaType } from "../types/media";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "./useQueries";
+
 
 export interface UseCreatePostReturn {
   content: string;
@@ -20,9 +23,12 @@ export interface UseCreatePostReturn {
 }
 
 export function useCreatePost(): UseCreatePostReturn {
-  const navigate = useNavigate();
   const [content, setContent] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
 
   const handleCreatePost = async (
     user: User,
@@ -93,6 +99,9 @@ export function useCreatePost(): UseCreatePostReturn {
           URL.revokeObjectURL(url);
         }
       });
+      
+      queryClient.invalidateQueries({ queryKey: queryKeys.allPosts() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userPosts(user.uid) });
 
       navigate("/feed");
     } catch (error) {
