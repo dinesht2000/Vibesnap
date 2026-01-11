@@ -11,6 +11,7 @@ import {
   FileInputs,
 } from "../components/create-post";
 
+
 export default function CreatePost() {
   const { user, profileComplete, loading: authLoading } = useAuth();
   const {

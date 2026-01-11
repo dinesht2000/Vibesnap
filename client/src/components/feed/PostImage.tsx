@@ -10,10 +10,12 @@ interface PostImageProps {
 export default function PostImage({ imageUrl, alt = "Post",imageUrls }: PostImageProps) {
 
   const images = imageUrls && imageUrls.length > 0 
-    ? imageUrls 
+    ? imageUrls.filter((url, index, self) => self.indexOf(url) === index) 
     : (imageUrl ? [imageUrl] : []);
 
-    const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const validIndex = images.length > 0 ? Math.min(currentIndex, images.length - 1) : 0;
 
   if (images.length === 0) {
     return null;
@@ -42,11 +44,11 @@ export default function PostImage({ imageUrl, alt = "Post",imageUrls }: PostImag
         <div className="relative w-full h-full">
           {images.map((url, index) => (
             <LazyImage
-              key={index}
+              key={`${url}-${index}`}
               src={url}
               alt={`${alt} ${index + 1}`}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
-                index === currentIndex ? 'opacity-100' : 'opacity-0'
+              index === validIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
               rootMargin="100px"
             />
@@ -104,7 +106,7 @@ export default function PostImage({ imageUrl, alt = "Post",imageUrls }: PostImag
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex
+                index === validIndex
                     ? 'bg-white w-6'
                     : 'bg-white bg-opacity-50 hover:bg-opacity-75'
                 }`}
@@ -116,7 +118,7 @@ export default function PostImage({ imageUrl, alt = "Post",imageUrls }: PostImag
 
         {images.length > 1 && (
           <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded z-10">
-            {currentIndex + 1} / {images.length}
+            {validIndex + 1} / {images.length}
           </div>
         )}
       </div>

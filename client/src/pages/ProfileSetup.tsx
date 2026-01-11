@@ -173,7 +173,7 @@ export default function ProfileSetup() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 flex items-center justify-center">
+                  <div className="w-full h-full bg-linear-to-br from-purple-400 via-pink-400 to-orange-400 flex items-center justify-center">
                     <svg
                       className="w-12 h-12 text-white/70"
                       fill="none"
