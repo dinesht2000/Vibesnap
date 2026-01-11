@@ -1,5 +1,8 @@
-import { getDatabase, ref, set, get,update, push, onValue, off } from "firebase/database";
+import { getDatabase, ref, set, get,update, push, onValue, off ,remove} from "firebase/database";
 import { app } from "./firebase.config";
+import { storage } from "./storage";
+import { ref as storageRef, deleteObject } from "firebase/storage";
+
 
 export const database = getDatabase(app);
 
@@ -18,6 +21,9 @@ export interface Post {
   content: string;
   imageUrl?: string;
   createdAt: number;
+  imageUrls?: string[];
+  videoUrl?: string;
+  likeCount?: number;
 }
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   const profileRef = ref(database, `users/${userId}/profile`);
@@ -107,7 +113,75 @@ export const getAllPosts = async (): Promise<Post[]> => {
       });
     }
   });
-  console.log(cnt);
-  // Sort by creation date (newest first)
   return allPosts.sort((a, b) => b.createdAt - a.createdAt);
+};
+export const deletePost = async (userId: string, postId: string, post: Post): Promise<void> => {
+  const postRef = ref(database, `users/${userId}/posts/${postId}`);
+  await remove(postRef);
+
+  if (post.imageUrl) {
+    try {
+      const imageStorageRef = storageRef(storage, `users/${userId}/posts/${postId}.jpg`);
+      await deleteObject(imageStorageRef);
+    } catch (error) {
+      console.error("Error deleting post image:", error);
+    }
+  }
+  if (post.videoUrl) {
+    try {
+      const extensions = ['mp4', 'mov', 'webm', 'avi'];
+      for (const ext of extensions) {
+        try {
+          const videoStorageRef = storageRef(storage, `users/${userId}/posts/${postId}.${ext}`);
+          await deleteObject(videoStorageRef);
+          break; 
+        } catch (error) {
+          console.error("Error deleting post video:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting post video:", error);
+    }
+  }
+};
+
+export const checkUserLikedPost = async (postOwnerId: string, postId: string, userId: string): Promise<boolean> => {
+  const likeRef = ref(database, `users/${postOwnerId}/posts/${postId}/likes/${userId}`);
+  const snapshot = await get(likeRef);
+  return snapshot.exists();
+};
+
+export const togglePostLike = async (postOwnerId: string, postId: string, userId: string): Promise<boolean> => {
+  const likeRef = ref(database, `users/${postOwnerId}/posts/${postId}/likes/${userId}`);
+  const postRef = ref(database, `users/${postOwnerId}/posts/${postId}`);
+  const snapshot = await get(likeRef);
+  const isLiked = snapshot.exists();
+  
+  if (isLiked) {
+    await remove(likeRef);
+    const postSnapshot = await get(postRef);
+    const currentLikeCount = postSnapshot.val()?.likeCount || 0;
+    await update(postRef, {
+      likeCount: Math.max(0, currentLikeCount - 1),
+    });
+    return false;
+  } else {
+    await set(likeRef, true);
+    const postSnapshot = await get(postRef);
+    const currentLikeCount = postSnapshot.val()?.likeCount || 0;
+    await update(postRef, {
+      likeCount: currentLikeCount + 1,
+    });
+    return true;
+  }
+};
+
+export const getPostsPaginated = async (page: number, limit: number = 10): Promise<{ posts: Post[]; hasMore: boolean }> => {
+  const allPosts = await getAllPosts();
+  const startIndex = page * limit;
+  const endIndex = startIndex + limit;
+  const posts = allPosts.slice(startIndex, endIndex);
+  const hasMore = endIndex < allPosts.length;
+  
+  return { posts, hasMore };
 };

@@ -1,15 +1,18 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import {
   getUserProfile,
   createUserProfile,
   checkProfileExists,
   createPost,
+  deletePost,
   getUserPosts,
   getAllPosts,
+  updateUserProfile,
+  getPostsPaginated,
   type UserProfile,
   type Post,
-  updateUserProfile,
 } from "../firebase/database";
+
 
 export const queryKeys = {
   userProfile: (userId: string) => ["userProfile", userId] as const,
@@ -116,5 +119,31 @@ export const useAllPosts = (enabled: boolean = true) => {
     queryKey: queryKeys.allPosts(),
     queryFn: () => getAllPosts(),
     enabled: enabled,
+  });
+};
+
+export const useDeletePost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, postId, post }: { userId: string; postId: string; post: Post }) =>
+      deletePost(userId, postId, post),
+    onSuccess: (_, variables) => {
+      // Invalidate and refetch user posts and all posts after deletion
+      queryClient.invalidateQueries({ queryKey: queryKeys.userPosts(variables.userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.allPosts() });
+    },
+  });
+};
+
+export const useInfinitePosts = (enabled: boolean = true, pageSize: number = 20) => {
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.allPosts(), 'infinite'],
+    queryFn: ({ pageParam = 0 }) => getPostsPaginated(pageParam, pageSize),
+    enabled: enabled,
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.hasMore ? allPages.length : undefined;
+    },
+    initialPageParam: 0,
   });
 };
